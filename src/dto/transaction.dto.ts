@@ -24,6 +24,10 @@ export class CreateTransactionDto {
   @IsNotEmpty({ message: 'Vui lòng chọn 1 danh mục' })
   categoryId: number;
 
+  @IsNumber({}, { message: 'userId không hợp lệ' })
+  @IsNotEmpty({ message: 'userId không được trống' })
+  userId: number;
+
   @IsDateString({}, { message: 'Ngày giao dịch không hợp lệ' })
   transactionDate: string;
 

@@ -20,6 +20,17 @@ export class UserService {
       where: {
         id: userId,
       },
+      select: {
+        name: true,
+        balance: true,
+        created_at: true,
+        email: true,
+        id: true,
+        isActive: true,
+        totalExpense: true,
+        totalIncome: true,
+        updated_at: true,
+      },
     });
     return result;
   }
