@@ -162,7 +162,7 @@ export class AuthService {
       // Tạo token
       const token = await this.generateToken(user.id, user.email);
 
-      const { password, ...userWithoutPassword } = user;
+      const { password, refreshToken, ...userWithoutPassword } = user;
 
       const respon = {
         user: userWithoutPassword,
