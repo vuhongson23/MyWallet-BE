@@ -9,6 +9,7 @@ import { Transaction } from './entities/transaction.entity';
 import { Category } from './entities/category.entity';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { Wallet } from './entities/wallet.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Transaction, Category], // Danh sách các entities ánh xạ
+      entities: [User, Transaction, Category, Wallet], // Danh sách các entities ánh xạ
       synchronize: true, // Tự động tạo bảng từ entity (chỉ dùng trong dev)
     }),
     UserModule,

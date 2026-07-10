@@ -23,13 +23,13 @@ export class User {
   @Column({ nullable: true })
   refreshToken: string;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   balance: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   totalIncome: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   totalExpense: number;
 
   @Column({ default: true })
