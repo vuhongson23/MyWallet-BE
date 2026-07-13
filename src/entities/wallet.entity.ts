@@ -5,11 +5,13 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
+@Unique(['userId', 'name']) // 1 user không được tạo 2 ví trùng tên
 export class Wallet {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -19,6 +21,9 @@ export class Wallet {
 
   @Column({ default: 0 })
   balance: number;
+
+  @Column({ nullable: true })
+  description?: string;
 
   @Column({ name: 'user_id' })
   userId: number;
