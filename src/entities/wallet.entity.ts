@@ -22,13 +22,22 @@ export class Wallet {
   @Column({ default: 0 })
   balance: number;
 
+  @Column({ default: 0 })
+  totalExpense: number;
+
+  @Column({ default: 0 })
+  totalIncome: number;
+
   @Column({ nullable: true })
   description?: string;
 
   @Column({ name: 'user_id' })
   userId: number;
 
-  @ManyToOne(() => User)
+  @Column({ default: false })
+  isDefault: boolean; // TRUE = ví tổng tài sản
+
+  @ManyToOne(() => User, (user) => user.wallets, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

@@ -21,15 +21,16 @@ export class UserService {
         id: userId,
       },
       select: {
-        name: true,
-        balance: true,
-        created_at: true,
-        email: true,
         id: true,
+        name: true,
+        email: true,
         isActive: true,
-        totalExpense: true,
-        totalIncome: true,
+        created_at: true,
         updated_at: true,
+        wallets: true,
+      },
+      relations: {
+        wallets: true,
       },
     });
     return result;

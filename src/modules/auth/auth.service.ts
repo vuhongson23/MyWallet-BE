@@ -4,9 +4,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from 'src/dto/user.dto';
 import { User } from 'src/entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { loginDto } from 'src/dto/auth.dto';
+import { Wallet } from 'src/entities/wallet.entity';
 
 @Injectable()
 export class AuthService {
@@ -15,36 +16,34 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private dataSource: DataSource,
   ) {}
 
-  private async generateToken(userId: number, email: string): Promise<object> {
-    const payload = {
-      sub: userId,
-      email,
-    };
-    // Tạo access token
+  private async generateToken(
+    userId: number,
+    email: string,
+    manager?: EntityManager, // truyền vào khi đang trong transaction
+  ): Promise<object> {
+    const payload = { sub: userId, email };
+
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
       secret: this.configService.get('SECRET_KEY'),
     });
-    // Tạo refresh token
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
       secret: this.configService.get('SECRET_KEY'),
     });
 
-    await this.userRepository.update(
-      {
-        id: payload.sub,
-        email: payload.email,
-      },
+    // Dùng manager của transaction nếu có, không thì dùng repository mặc định
+    const repo = manager ? manager.getRepository(User) : this.userRepository;
+
+    await repo.update(
+      { id: payload.sub, email: payload.email },
       { refreshToken },
     );
 
-    return {
-      refreshToken,
-      accessToken,
-    };
+    return { refreshToken, accessToken };
   }
 
   private async refreshAccessToken(refreshToken: string) {
@@ -91,14 +90,18 @@ export class AuthService {
   }
 
   async register(payload: CreateUserDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const isExistedEmai = await this.userRepository.findOneBy({
+      const isExistedEmai = await queryRunner.manager.findOneBy(User, {
         email: payload.email,
       });
-
       if (isExistedEmai) {
         throw new HttpException('Email đã tồn tại', HttpStatus.BAD_REQUEST);
       }
+
       const saltOrRound = 10;
       const hassPass = await bcrypt.hash(payload.password, saltOrRound);
 
@@ -108,28 +111,45 @@ export class AuthService {
         isActive: true,
       };
 
-      const { password, ...userWithoutPassword } =
-        await this.userRepository.save(userData);
+      // Dùng queryRunner.manager để nằm trong transaction
+      const savedUser = await queryRunner.manager.save(User, userData);
+      const { password, ...userWithoutPassword } = savedUser;
 
-      if (userWithoutPassword) {
-        const token = await this.generateToken(
-          userWithoutPassword.id,
-          userWithoutPassword.email,
+      // Tạo ví mặc định "Tổng tài sản" cho user vừa tạo
+      await queryRunner.manager.save(Wallet, {
+        name: 'Tổng tài sản',
+        balance: 0,
+        totalExpense: 0,
+        totalIncome: 0,
+        description: 'Save all your money',
+        isDefault: true,
+        userId: userWithoutPassword.id, // hoặc userId: userWithoutPassword.id, tuỳ tên cột FK trong entity Wallet
+      });
+
+      const token = await this.generateToken(
+        userWithoutPassword.id,
+        userWithoutPassword.email,
+        queryRunner.manager,
+      );
+      if (!token) {
+        throw new HttpException(
+          'Đã có lỗi xảy ra trong quá trình đăng ký',
+          HttpStatus.BAD_REQUEST,
         );
-        if (!token) {
-          throw new HttpException(
-            'Đã có lỗi xảy ra trong quá trình đăng ký',
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-        return {
-          code: 200,
-          token,
-          user: userWithoutPassword,
-        };
       }
+
+      await queryRunner.commitTransaction();
+
+      return {
+        code: 200,
+        token,
+        user: userWithoutPassword,
+      };
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       return error;
+    } finally {
+      await queryRunner.release();
     }
   }
 

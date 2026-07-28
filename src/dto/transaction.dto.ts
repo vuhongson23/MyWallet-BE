@@ -30,4 +30,7 @@ export class CreateTransactionDto {
   @IsOptional()
   @IsString()
   note?: string;
+
+  @IsNumber({}, { message: 'walletId không hợp lệ' })
+  walletId: number;
 }
