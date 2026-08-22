@@ -5,7 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateTransactionDto } from 'src/dto/transaction.dto';
+import {
+  CreateTransactionDto,
+  UpdateTransactionDto,
+} from 'src/dto/transaction.dto';
 import { Transaction } from 'src/entities/transaction.entity';
 import { User } from 'src/entities/user.entity';
 import { Wallet } from 'src/entities/wallet.entity';
@@ -183,23 +186,41 @@ export class TransactionsService {
 
   async updateTransaction(
     id: number,
-    data: CreateTransactionDto,
+    data: UpdateTransactionDto,
     userId: number,
   ): Promise<Transaction> {
     const existing = await this.transactionRepository.findOneBy({ id, userId });
     if (!existing)
       throw new HttpException('Giao dịch không tồn tại', HttpStatus.NOT_FOUND);
+
+    if (!data || Object.keys(data).length === 0) {
+      throw new HttpException(
+        'Vui lòng gửi ít nhất một trường để cập nhật',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const updated = {
+      title: data.title ?? existing.title,
+      type: data.type ?? existing.type,
+      amount: data.amount ?? existing.amount,
+      categoryId: data.categoryId ?? existing.categoryId,
+      transactionDate: data.transactionDate ?? existing.transactionDate,
+      note: data.note ?? existing.note,
+      walletId: data.walletId ?? existing.walletId,
+    };
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const wallet = await queryRunner.manager.findOneBy(Wallet, {
-        id: data.walletId,
+        id: updated.walletId,
         userId,
         isActive: true,
       });
       const category = await queryRunner.manager.findOneBy(Category, {
-        id: data.categoryId,
+        id: updated.categoryId,
       });
       if (!wallet) throw new UnauthorizedException('Ví không tồn tại');
       if (!category)
@@ -216,12 +237,12 @@ export class TransactionsService {
       );
       await this.applyBalance(
         queryRunner.manager,
-        data.walletId,
+        updated.walletId,
         userId,
-        data.type,
-        data.amount,
+        updated.type,
+        updated.amount,
       );
-      Object.assign(existing, data, { userId });
+      Object.assign(existing, updated, { userId });
       const saved = await queryRunner.manager.save(existing);
       await queryRunner.commitTransaction();
       return saved;

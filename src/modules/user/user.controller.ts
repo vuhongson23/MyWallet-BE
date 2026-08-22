@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
+  Put,
   Request,
   UseGuards,
   Body,
@@ -29,7 +29,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('info')
+  @Put('info')
   updateUser(@Request() req, @Body() data: UpdateUserDto) {
     return this.userService.updateUser(req.user.id, data);
   }

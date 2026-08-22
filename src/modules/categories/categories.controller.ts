@@ -4,10 +4,10 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
+  Put,
   Post,
 } from '@nestjs/common';
-import { CreateCategoryDto } from 'src/dto/category.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from 'src/dto/category.dto';
 import { Category } from 'src/entities/category.entity';
 import { CategoriesService } from './categories.service';
 
@@ -30,10 +30,10 @@ export class CategoriesController {
     return this.categoriesService.create(data);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() data: Partial<CreateCategoryDto>,
+    @Body() data: UpdateCategoryDto,
   ): Promise<Category> {
     return this.categoriesService.update(Number(id), data);
   }

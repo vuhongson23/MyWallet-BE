@@ -5,7 +5,7 @@ import {
   Param,
   Post,
   Get,
-  Patch,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -53,7 +53,7 @@ export class WalletController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('/:id')
+  @Put('/:id')
   updateWallet(
     @Request() req,
     @Param('id') id: string,

@@ -8,7 +8,7 @@ async function bootstrap() {
 
   const corsOptions: CorsOptions = {
     origin: ['http://localhost:8081', 'http://10.110.50.31:8081'],
-    methods: ['GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'],
+    methods: ['GET,HEAD,PUT,POST,DELETE,OPTIONS'],
     credentials: true,
   };
 
