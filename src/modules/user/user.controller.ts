@@ -1,19 +1,36 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Request,
+  UseGuards,
+  Body,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateUserDto } from 'src/dto/user.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('all')
   findAll(): Promise<User[]> {
     return this.userService.findAll();
   }
 
-  @Get('info/:userId')
-  getUserInfo(@Param() param): Promise<User | null> {
-    const { userId } = param;
-    return this.userService.getUserInfo(userId);
+  @UseGuards(JwtAuthGuard)
+  @Get('info')
+  getUserInfo(@Request() req): Promise<User | null> {
+    return this.userService.getUserInfo(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('info')
+  updateUser(@Request() req, @Body() data: UpdateUserDto) {
+    return this.userService.updateUser(req.user.id, data);
   }
 }

@@ -19,3 +19,14 @@ export class CreateWalletDto {
   @IsOptional()
   description?: string;
 }
+
+export class UpdateWalletDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+}

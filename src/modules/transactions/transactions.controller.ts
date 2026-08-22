@@ -4,6 +4,8 @@ import {
   Get,
   Param,
   Post,
+  Patch,
+  Delete,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -27,16 +29,36 @@ export class TransactionsController {
     return this.transactionService.findAllTransactionByUser(req.user.id);
   }
 
-  @Get('/recent/:id')
-  getRecentTransaction(
-    @Param() params: { id: number },
-  ): Promise<Transaction[]> {
-    return this.transactionService.getRecentTransaction(params.id);
+  @UseGuards(JwtAuthGuard)
+  @Get('/recent')
+  getRecentTransaction(@Request() req): Promise<Transaction[]> {
+    return this.transactionService.getRecentTransaction(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
   createTransaction(@Body() data: CreateTransactionDto, @Request() req) {
     return this.transactionService.createTransaction(data, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/:id')
+  updateTransaction(
+    @Param('id') id: string,
+    @Body() data: CreateTransactionDto,
+    @Request() req,
+  ) {
+    return this.transactionService.updateTransaction(
+      Number(id),
+      data,
+      req.user.id,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/:id')
+  async deleteTransaction(@Param('id') id: string, @Request() req) {
+    await this.transactionService.deleteTransaction(Number(id), req.user.id);
+    return { code: 200, message: 'Xoá giao dịch thành công' };
   }
 }

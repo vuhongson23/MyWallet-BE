@@ -52,13 +52,13 @@ export class AuthService {
         sub: number;
         email: string;
       } = await this.jwtService.verify(refreshToken, {
-        secret: this.configService.get('SECRET_TOKEN'),
+        secret: this.configService.get('SECRET_KEY'),
       });
-      const userVerified = this.userRepository.findOneBy({
+      const userVerified = await this.userRepository.findOneBy({
         id: verify.sub,
         email: verify.email,
       });
-      if (!userVerified) {
+      if (!userVerified || userVerified.refreshToken !== refreshToken) {
         throw new HttpException(
           'Invalid refresh token',
           HttpStatus.BAD_REQUEST,
@@ -85,7 +85,7 @@ export class AuthService {
       }
       return { code: 200 };
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
@@ -147,7 +147,7 @@ export class AuthService {
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      return error;
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -192,7 +192,7 @@ export class AuthService {
 
       return respon;
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
@@ -201,7 +201,7 @@ export class AuthService {
       const token = await this.refreshAccessToken(refreshToken);
       return token;
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 }

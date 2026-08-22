@@ -37,6 +37,9 @@ export class Wallet {
   @Column({ default: false })
   isDefault: boolean; // TRUE = ví tổng tài sản
 
+  @Column({ default: true })
+  isActive: boolean;
+
   @ManyToOne(() => User, (user) => user.wallets, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

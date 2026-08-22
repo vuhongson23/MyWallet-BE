@@ -11,6 +11,8 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { Wallet } from './entities/wallet.entity';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { WalletModule } from './modules/wallet/wallet.module';
     TransactionsModule,
     AuthModule,
     WalletModule,
+    DashboardModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
