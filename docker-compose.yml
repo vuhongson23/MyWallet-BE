@@ -9,7 +9,7 @@ services:
       - '8081'
     environment:
       NODE_ENV: production
-      PORT: 8081
+      PORT: ${PORT}
       DB_HOST: mysql
       PORT_DB: 3307
       DB_USERNAME: ${DB_USERNAME:-root}
