@@ -25,7 +25,7 @@ services:
     container_name: mywallet-mysql
     restart: unless-stopped
     expose:
-      - '3306'
+      - '3307'
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME:-mywallet}
