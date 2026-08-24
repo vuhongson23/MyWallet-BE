@@ -9,9 +9,9 @@ services:
       - '8081'
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 8081
       DB_HOST: mysql
-      PORT_DB: 3306
+      PORT_DB: 3307
       DB_USERNAME: ${DB_USERNAME:-root}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME:-mywallet}
@@ -25,7 +25,7 @@ services:
     container_name: mywallet-mysql
     restart: unless-stopped
     expose:
-      - '3306'
+      - '3307'
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME:-mywallet}
